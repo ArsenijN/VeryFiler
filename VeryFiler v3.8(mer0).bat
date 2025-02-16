@@ -1,8 +1,12 @@
 @echo off
 >NUL chcp 65001
 
-echo Creating folders...
+echo Йде створення папок...
 
+if not exist "1. Original\" (
+    2>NUL mkdir "1. Files for verify"
+    echo Ви забули створити папку. Не хвилюйтесь, вони були створені для зручності
+)
 2>NUL mkdir "1. Files for verify"
 2>NUL mkdir "2. Verified logs"
 2>NUL mkdir "2. Verified logs\Good"
@@ -10,7 +14,7 @@ echo Creating folders...
 set files=0
 set count=0
 
-echo The program works recursively. All files, including subfolders, will be processed.
+echo Програма працює рекурсивно. Оброблятимуться всі файли, включно з вкладеними папками.
 
 rem Count the total number of files recursively
 for /r "1. Files for verify" %%a in (*.*) do (
@@ -35,7 +39,7 @@ for /r "1. Files for verify" %%a in (*.*) do (
     set "logname=!logname:\=#!"
 
     rem Run ffmpeg to check the file and create a log file with the modified path name
-    ffmpeg.exe -v error -i "%%a" -f null - >"2. Verified logs\error_!logname!_.log" 2>&1 
+    ffmpeg.exe -v error -i "%%a" -max_error_rate 0.0 -f null - >"2. Verified logs\_!logname!_error.log" 2>&1 
 
     rem Update the count of processed files
     set /a count+=1
@@ -55,7 +59,7 @@ echo All files processed!
 
 rem Move good log files (those with zero size) to the "Good" folder
 for /r "2. Verified logs" %%a in (*.*) do if %%~za==0 (
-    move "%%a" "2. Verified logs\Good\"
+    >NUL move "%%a" "2. Verified logs\Good\"
     echo File %%a is good!
 )
 
